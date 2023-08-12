@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">VirtualWaitress</string>
+    <string name="app_name">Virtual Waitress</string>
     <string name="title_home">Menu</string>
     <string name="title_dashboard">Cart</string>
     <string name="title_notifications">Notifications</string>

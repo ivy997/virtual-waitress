@@ -12,15 +12,17 @@ public class Order {
     private Date orderDateAndTime;
     private OrderStatus orderStatus;
     private float billPrice;
+    private int tableNumber;
 
     public Order() {
     }
 
-    public Order(List<CartItem> items, Date orderDateAndTime, OrderStatus orderStatus, float billPrice) {
+    public Order(List<CartItem> items, Date orderDateAndTime, OrderStatus orderStatus, float billPrice, int tableNumber) {
         this.items = items;
         this.orderDateAndTime = orderDateAndTime;
         this.orderStatus = orderStatus;
         this.billPrice = billPrice;
+        this.tableNumber = tableNumber;
     }
 
     public String getOrderId() {
@@ -61,5 +63,13 @@ public class Order {
 
     public void setBillPrice(float billPrice) {
         this.billPrice = billPrice;
+    }
+
+    public int getTableNumber() {
+        return tableNumber;
+    }
+
+    public void setTableNumber(int tableNumber) {
+        this.tableNumber = tableNumber;
     }
 }

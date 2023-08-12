@@ -1,5 +1,8 @@
 package com.example.virtualwaitress.ui.dashboard;
 
+import static android.content.Context.MODE_PRIVATE;
+
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -81,8 +84,15 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
                 Date today = getCurrentDateTime();
                 OrderStatus initialStatus = OrderStatus.PLACED;
                 billPrice = cartAdapter.getBillPrice();
-                Order order = new Order(cartItems, today, initialStatus, billPrice);
-                createOrder(order);
+                // Retrieve table number in another activity
+                SharedPreferences sharedPreferences = getContext().getSharedPreferences("MyPrefs", MODE_PRIVATE);
+                int savedTableNumber = sharedPreferences.getInt("tableNumber", -1); // -1 is the default value if not found
+                if (savedTableNumber != -1) {
+                    Order order = new Order(cartItems, today, initialStatus, billPrice, savedTableNumber);
+                    createOrder(order);
+                } else {
+                    Toast.makeText(getContext(), "Something went wrong", Toast.LENGTH_SHORT).show();
+                }
                 //Toast.makeText(getContext(), "Order placed.", Toast.LENGTH_SHORT).show();
             }
         });
@@ -155,6 +165,7 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
                 order.setOrderId(result);
                 updateOrder(order);
                 Toast.makeText(getActivity(), "Order placed successfully.", Toast.LENGTH_SHORT).show();
+                cartAdapter.deleteCartItems();
             }
 
             @Override

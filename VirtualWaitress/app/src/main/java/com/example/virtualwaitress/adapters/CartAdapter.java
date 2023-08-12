@@ -160,6 +160,11 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         notifyDataSetChanged();
     }
 
+    public void deleteCartItems() {
+        this.items.clear();
+        notifyDataSetChanged();
+    }
+
     public void setTotalPriceTV(TextView totalPrice) {
         this.totalPrice = totalPrice;
     }
