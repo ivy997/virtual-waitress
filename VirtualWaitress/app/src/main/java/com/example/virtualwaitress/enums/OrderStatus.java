@@ -3,6 +3,7 @@ package com.example.virtualwaitress.enums;
 public enum OrderStatus {
     PLACED("Placed"),
     PREPARING("Preparing"),
+    READY("Ready"),
     SERVED("Served"),
     COMPLETED("Completed"),
     CANCELED("Canceled");

@@ -1,8 +1,10 @@
 package com.example.virtualwaitress.util;
 
+import android.nfc.Tag;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.example.virtualwaitress.models.CartItem;
 import com.example.virtualwaitress.models.Category;
@@ -13,7 +15,9 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -37,8 +41,8 @@ public class FirebaseManager {
         ordersRef = db.collection("Orders");
     }
 
-    public void getCategories(Callback <List<Category>> callback) {
-       categoriesRef.get()
+    public void getCategories(Callback<List<Category>> callback) {
+        categoriesRef.get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -58,7 +62,7 @@ public class FirebaseManager {
                 });
     }
 
-    public void getDishes(Callback <List<Dish>> callback) {
+    public void getDishes(Callback<List<Dish>> callback) {
         dishesRef.get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<Dish> dishes = new ArrayList<>();
@@ -93,7 +97,7 @@ public class FirebaseManager {
                 });
     }
 
-    public void getDishesByCategory(String categoryId, Callback <List<Dish>> callback) {
+    public void getDishesByCategory(String categoryId, Callback<List<Dish>> callback) {
         dishesRef.whereEqualTo("categoryId", categoryId)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -155,7 +159,7 @@ public class FirebaseManager {
                 });
     }
 
-    public void getCart(Callback <List<CartItem>> callback) {
+    public void getCart(Callback<List<CartItem>> callback) {
         try {
             cartRef.get()
                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -210,5 +214,58 @@ public class FirebaseManager {
                 .addOnFailureListener(e -> {
                     callback.onError(e.getMessage());
                 });
+    }
+
+    public void getTableOrder(int tableNumber, Callback<Order> callback) {
+        ordersRef.whereEqualTo("tableNumber", tableNumber)
+                .limit(1)
+                .get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        QuerySnapshot querySnapshot = task.getResult();
+                        if (querySnapshot != null && !querySnapshot.isEmpty()) {
+                            DocumentSnapshot documentSnapshot = querySnapshot.getDocuments().get(0);
+                            // Handle the retrieved order document
+                            // Here you can access the data using documentSnapshot.getData()
+                            if (documentSnapshot.exists()) {
+                                Order order = documentSnapshot.toObject(Order.class);
+
+                                callback.onSuccess(order);
+                            }
+                        } else {
+                            // No matching order found
+                        }
+                    }
+                }).addOnFailureListener(e -> {
+                    callback.onError(e.getMessage());
+                });
+    }
+
+    // Method to listen for real-time changes to the Order document
+    public void listenForOrderChanges(String orderId, Callback<Order> callback) {
+        // Get the document reference for the specific order
+        DocumentReference orderDocument = ordersRef.document(orderId);
+
+// Add a snapshot listener to the specific order document
+        orderDocument.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    // Handle the error
+                    callback.onError(e.getMessage());
+                    //return;
+                }
+
+                if (documentSnapshot != null && documentSnapshot.exists()) {
+                    // The order document exists and has data
+                    // Extract the order data and update the UI
+                    Order order = documentSnapshot.toObject(Order.class);
+                    callback.onSuccess(order);
+                    // Update the UI with the order details
+                } else {
+                    // The order document doesn't exist or has been deleted
+                    // Handle the case where the order document is no longer available\
+                }
+            }
+        });
     }
 }

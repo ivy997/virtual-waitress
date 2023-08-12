@@ -48,9 +48,7 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
     private List<Category> categories;
     private CategoryAdapter categoryAdapter;
     private FirebaseManager firebaseManager;
-    //private RecyclerView dishRecyclerView;
     private List<Dish> dishes;
-    private DishAdapter dishAdapter;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
