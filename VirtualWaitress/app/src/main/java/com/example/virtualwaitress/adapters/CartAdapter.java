@@ -7,11 +7,13 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.virtualwaitress.MainActivity;
 import com.example.virtualwaitress.R;
 import com.example.virtualwaitress.models.CartItem;
 import com.example.virtualwaitress.models.Dish;
@@ -208,6 +210,10 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         firebaseManager.deleteCartItems(userId, tableNumber, new Callback<Boolean>() {
             @Override
             public void onSuccess(Boolean result) {
+                if (context instanceof MainActivity) {
+                    ((MainActivity) context).refreshActivity();
+                }
+                Toast.makeText(context, "Order updated successfully", Toast.LENGTH_SHORT).show();
             }
 
             @Override

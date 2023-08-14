@@ -3,10 +3,11 @@ package com.example.virtualwaitress.models;
 import com.example.virtualwaitress.enums.OrderStatus;
 import com.google.type.DateTime;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-public class Order {
+public class Order implements Serializable {
     private String orderId;
     private List<CartItem> items;
     private Date orderDateAndTime;
