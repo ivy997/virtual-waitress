@@ -6,11 +6,14 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.virtualwaitress.enums.OrderStatus;
 import com.example.virtualwaitress.models.CartItem;
 import com.example.virtualwaitress.models.Category;
 import com.example.virtualwaitress.models.Dish;
 import com.example.virtualwaitress.models.Order;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
@@ -18,6 +21,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -41,8 +45,10 @@ public class FirebaseManager {
         ordersRef = db.collection("Orders");
     }
 
-    public void getCategories(Callback<List<Category>> callback) {
-        categoriesRef.get()
+    public void getCategories(String userId, Callback<List<Category>> callback) {
+        categoriesRef
+                .whereEqualTo("userId", userId)
+                .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -62,8 +68,10 @@ public class FirebaseManager {
                 });
     }
 
-    public void getDishes(Callback<List<Dish>> callback) {
-        dishesRef.get()
+    public void getDishes(String userId, Callback<List<Dish>> callback) {
+        dishesRef
+                .whereEqualTo("userId", userId)
+                .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<Dish> dishes = new ArrayList<>();
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
@@ -158,10 +166,50 @@ public class FirebaseManager {
                     }
                 });
     }
+    public void deleteCartItems(String userId, int tableNumber, Callback<Boolean> callback) {
+        // Create a query to retrieve the cart items
+        Query query = cartRef
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("tableNumber", tableNumber);
 
-    public void getCart(Callback<List<CartItem>> callback) {
+        // Execute the query
+        query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    // Delete each cart item document
+                    for (DocumentSnapshot document : task.getResult()) {
+                        cartRef.document(document.getId())
+                                .delete()
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        // Cart item successfully deleted
+                                        // You can perform additional actions or handle success here
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        // Handle deletion failure
+                                    }
+                                });
+                    }
+                    // Callback to indicate success
+                    callback.onSuccess(true);
+                } else {
+                    // Handle query failure
+                    callback.onError(task.getException().getMessage());
+                }
+            }
+        });
+    }
+
+    public void getCart(String userId, int tableNumber, Callback<List<CartItem>> callback) {
         try {
-            cartRef.get()
+            cartRef.whereEqualTo("userId", userId)
+                    .whereEqualTo("tableNumber", tableNumber)
+                    .get()
                     .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                         @Override
                         public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -216,8 +264,11 @@ public class FirebaseManager {
                 });
     }
 
-    public void getTableOrder(int tableNumber, Callback<Order> callback) {
-        ordersRef.whereEqualTo("tableNumber", tableNumber)
+    public void getTableOrder(String userId, int tableNumber, List<OrderStatus> excludedStatuses, Callback<Order> callback) {
+        ordersRef
+                .whereEqualTo("userId", userId)
+                .whereEqualTo("tableNumber", tableNumber)
+                .whereNotIn("orderStatus", excludedStatuses)
                 .limit(1)
                 .get().addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
@@ -230,10 +281,16 @@ public class FirebaseManager {
                                 Order order = documentSnapshot.toObject(Order.class);
 
                                 callback.onSuccess(order);
+                            } else {
+                                Log.d("FirestoreDebug", "Document doesn't exist.");
                             }
                         } else {
-                            // No matching order found
+                            callback.onError("");
+                            Log.d("FirestoreDebug", "No matching documents.");
                         }
+                    } else {
+                        Log.e("FirestoreError", "Query failed: " + task.getException());
+                        callback.onError(task.getException().getMessage());
                     }
                 }).addOnFailureListener(e -> {
                     callback.onError(e.getMessage());
@@ -245,7 +302,7 @@ public class FirebaseManager {
         // Get the document reference for the specific order
         DocumentReference orderDocument = ordersRef.document(orderId);
 
-// Add a snapshot listener to the specific order document
+        // Add a snapshot listener to the specific order document
         orderDocument.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {

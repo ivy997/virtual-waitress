@@ -13,16 +13,18 @@ public class Order {
     private OrderStatus orderStatus;
     private float billPrice;
     private int tableNumber;
+    private String userId;
 
     public Order() {
     }
 
-    public Order(List<CartItem> items, Date orderDateAndTime, OrderStatus orderStatus, float billPrice, int tableNumber) {
+    public Order(List<CartItem> items, Date orderDateAndTime, OrderStatus orderStatus, float billPrice, int tableNumber, String userId) {
         this.items = items;
         this.orderDateAndTime = orderDateAndTime;
         this.orderStatus = orderStatus;
         this.billPrice = billPrice;
         this.tableNumber = tableNumber;
+        this.userId = userId;
     }
 
     public String getOrderId() {
@@ -71,5 +73,13 @@ public class Order {
 
     public void setTableNumber(int tableNumber) {
         this.tableNumber = tableNumber;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

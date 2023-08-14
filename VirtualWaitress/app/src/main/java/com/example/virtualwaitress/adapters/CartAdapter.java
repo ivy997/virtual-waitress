@@ -160,8 +160,8 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         notifyDataSetChanged();
     }
 
-    public void deleteCartItems() {
-        this.items.clear();
+    public void deleteCartItems(String userId, int tableNumber) {
+        deleteCartItemsFromFirebase(userId, tableNumber);
         notifyDataSetChanged();
     }
 
@@ -196,6 +196,18 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         firebaseManager.deleteCartItem(cartItemId, new Callback<Void>() {
             @Override
             public void onSuccess(Void result) {
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+            }
+        });
+    }
+
+    private void deleteCartItemsFromFirebase(String userId, int tableNumber) {
+        firebaseManager.deleteCartItems(userId, tableNumber, new Callback<Boolean>() {
+            @Override
+            public void onSuccess(Boolean result) {
             }
 
             @Override

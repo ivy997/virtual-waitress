@@ -13,16 +13,18 @@ public class Dish implements Serializable {
     private float price;
     private boolean addedToCart;
     private String categoryId;
+    private String userId;
 
     public Dish() {
     }
 
-    public Dish(String name, String description, String imageUrl, float price, String categoryId) {
+    public Dish(String name, String description, String imageUrl, float price, String categoryId, String userId) {
         this.name = name;
         this.description = description;
         this.imageUrl = imageUrl;
         this.price = price;
         this.categoryId = categoryId;
+        this.userId = userId;
     }
 
     public String getDishId() {
@@ -79,5 +81,13 @@ public class Dish implements Serializable {
 
     public void setCategoryId(String categoryId) {
         this.categoryId = categoryId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

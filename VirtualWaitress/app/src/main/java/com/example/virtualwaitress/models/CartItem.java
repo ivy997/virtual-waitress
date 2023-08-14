@@ -4,13 +4,17 @@ public class CartItem {
     private String cartItemId;
     private Dish dish;
     private int quantity;
+    private int tableNumber;
+    private String userId;
 
     public CartItem() {
     }
 
-    public CartItem(Dish dish, int quantity) {
+    public CartItem(Dish dish, int quantity, int tableNumber, String userId) {
         this.dish = dish;
         this.quantity = quantity;
+        this.tableNumber = tableNumber;
+        this.userId = userId;
     }
 
     public String getCartItemId() {
@@ -35,5 +39,21 @@ public class CartItem {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    public int getTableNumber() {
+        return tableNumber;
+    }
+
+    public void setTableNumber(int tableNumber) {
+        this.tableNumber = tableNumber;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

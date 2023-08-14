@@ -2,9 +2,11 @@ package com.example.virtualwaitress.activities;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -23,6 +25,7 @@ import com.example.virtualwaitress.models.CartItem;
 import com.example.virtualwaitress.models.Dish;
 import com.example.virtualwaitress.util.Callback;
 import com.example.virtualwaitress.util.FirebaseManager;
+import com.example.virtualwaitress.util.RestaurantUser;
 
 import org.checkerframework.checker.units.qual.C;
 
@@ -36,6 +39,7 @@ public class CategoryDetailsActivity extends AppCompatActivity implements DishAd
     private DishAdapter dishAdapter;
     private List<Dish> dishes;
     private RecyclerView dishRecyclerView;
+    private String currentUserId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,12 +48,22 @@ public class CategoryDetailsActivity extends AppCompatActivity implements DishAd
 
         firebaseManager = new FirebaseManager();
 
+        if (RestaurantUser.getInstance() != null) {
+            currentUserId = RestaurantUser.getInstance().getUserId();
+        }
+
+        SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        int savedTableNumber = sharedPreferences.getInt("tableNumber", -1); // -1 is the default value if not found
+        if (savedTableNumber != -1) {
+
+        }
+
         Bundle extras = getIntent().getExtras();
         //String categoryId = extras.getString("categoryId");
         dishes = (List<Dish>) getIntent().getSerializableExtra("dishes");
         dishRecyclerView = findViewById(R.id.dishRecyclerView);
         dishAdapter = new DishAdapter(dishes);
-        dishRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        dishRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
         dishRecyclerView.setHasFixedSize(true);
         dishAdapter.setOnItemClickListener(this);
         dishRecyclerView.setAdapter(dishAdapter);
@@ -77,11 +91,15 @@ public class CategoryDetailsActivity extends AppCompatActivity implements DishAd
     }
 
     private void addToCart(Dish dish, int count) {
-        if (!dish.isAddedToCart()) {
-            CartItem item = new CartItem(dish, count);
-            addCartItem(item);
-            dish.setAddedToCart(true);
-            dishAdapter.updateDish(dish);
+        SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        int savedTableNumber = sharedPreferences.getInt("tableNumber", -1); // -1 is the default value if not found
+        if (savedTableNumber != -1) {
+            if (!dish.isAddedToCart()) {
+                CartItem item = new CartItem(dish, count, savedTableNumber, currentUserId);
+                addCartItem(item);
+                dish.setAddedToCart(true);
+                dishAdapter.updateDish(dish);
+            }
         }
     }
 

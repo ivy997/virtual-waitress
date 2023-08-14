@@ -31,6 +31,7 @@ import com.example.virtualwaitress.models.Category;
 import com.example.virtualwaitress.models.Dish;
 import com.example.virtualwaitress.util.Callback;
 import com.example.virtualwaitress.util.FirebaseManager;
+import com.example.virtualwaitress.util.RestaurantUser;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -49,6 +50,7 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
     private CategoryAdapter categoryAdapter;
     private FirebaseManager firebaseManager;
     private List<Dish> dishes;
+    private String currentUserId;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -79,8 +81,12 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
 
         containerLayout = root.findViewById(R.id.containerLayout);
 
-        getCategories();
+        if (RestaurantUser.getInstance() != null) {
+            currentUserId = RestaurantUser.getInstance().getUserId();
+        }
 
+        getCategories(currentUserId);
+        getDishes();
         return root;
     }
 
@@ -123,14 +129,14 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
         return null;
     }
 
-    private void getCategories() {
-        firebaseManager.getCategories(new Callback<List<Category>>() {
+    private void getCategories(String userId) {
+        firebaseManager.getCategories(userId, new Callback<List<Category>>() {
             @Override
             public void onSuccess(List<Category> result) {
                 categories = result;
                 categoryAdapter.setCategories(categories);
                 //dishAdapter.setCategories(categories);
-                getDishes();
+                //getDishes();
             }
 
             @Override
@@ -141,7 +147,7 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
     }
 
     private void getDishes() {
-        firebaseManager.getDishes(new Callback<List<Dish>>() {
+        firebaseManager.getDishes(currentUserId, new Callback<List<Dish>>() {
             @Override
             public void onSuccess(List<Dish> result) {
                 dishes = result;
@@ -157,8 +163,6 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
     }
 
     private void fillHorizontalScrollView() {
-
-
         for (Dish dish : dishes) {
             CardView cardView = new CardView(getContext());
             View itemView = LayoutInflater.from(getContext()).inflate(R.layout.menu_card_item, cardView, false);
