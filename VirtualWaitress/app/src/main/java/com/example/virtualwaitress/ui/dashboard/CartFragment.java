@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,14 +19,19 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.virtualwaitress.MainActivity;
 import com.example.virtualwaitress.R;
 import com.example.virtualwaitress.adapters.CartAdapter;
 import com.example.virtualwaitress.databinding.FragmentCartBinding;
 import com.example.virtualwaitress.enums.OrderStatus;
 import com.example.virtualwaitress.models.CartItem;
+import com.example.virtualwaitress.models.Dish;
 import com.example.virtualwaitress.models.Order;
 import com.example.virtualwaitress.util.Callback;
 import com.example.virtualwaitress.util.FirebaseManager;
+import com.example.virtualwaitress.util.RestaurantUser;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.util.Listener;
 import com.google.type.DateTime;
 
 import java.util.ArrayList;
@@ -44,6 +50,9 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
     private CartAdapter cartAdapter;
     private List<CartItem> cartItems;
     private float billPrice;
+    private String currentUserId;
+    private Order order;
+    private int savedTableNumber;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -55,6 +64,13 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
 
         final TextView textView = binding.textDashboard;
         cartViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
+
+        if (RestaurantUser.getInstance() != null) {
+            currentUserId = RestaurantUser.getInstance().getUserId();
+        }
+
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        savedTableNumber = sharedPreferences.getInt("tableNumber", -1); // -1 is the default value if not found
 
         firebaseManager = new FirebaseManager();
         cartItems = new ArrayList<>();
@@ -81,15 +97,12 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
             public void onClick(View v) {
                 // Perform actions to place the order
                 // ...
-                Date today = getCurrentDateTime();
-                OrderStatus initialStatus = OrderStatus.PLACED;
-                billPrice = cartAdapter.getBillPrice();
+
                 // Retrieve table number in another activity
                 SharedPreferences sharedPreferences = getContext().getSharedPreferences("MyPrefs", MODE_PRIVATE);
                 int savedTableNumber = sharedPreferences.getInt("tableNumber", -1); // -1 is the default value if not found
                 if (savedTableNumber != -1) {
-                    Order order = new Order(cartItems, today, initialStatus, billPrice, savedTableNumber);
-                    createOrder(order);
+                    getOrder(currentUserId, savedTableNumber);
                 } else {
                     Toast.makeText(getContext(), "Something went wrong", Toast.LENGTH_SHORT).show();
                 }
@@ -142,7 +155,7 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
 
     private void getCartItems() {
         cartAdapter.setOnCartItemChangedListener(this);
-        firebaseManager.getCart(new Callback<List<CartItem>>() {
+        firebaseManager.getCart(currentUserId, savedTableNumber, new Callback<List<CartItem>>() {
             @Override
             public void onSuccess(List<CartItem> result) {
                 cartItems = result;
@@ -165,7 +178,7 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
                 order.setOrderId(result);
                 updateOrder(order);
                 Toast.makeText(getActivity(), "Order placed successfully.", Toast.LENGTH_SHORT).show();
-                cartAdapter.deleteCartItems();
+                //cartAdapter.deleteCartItems();
             }
 
             @Override
@@ -176,6 +189,59 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
 
     private void updateOrder(Order order) {
         firebaseManager.updateOrder(order, new Callback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                if (savedTableNumber != -1) {
+                    cartAdapter.deleteCartItems(currentUserId, savedTableNumber);
+                }
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+            }
+        });
+    }
+
+    private void getOrder(String userId, int tableNumber) {
+        List<OrderStatus> excludedStatuses = new ArrayList<>();
+        excludedStatuses.add(OrderStatus.CANCELED);
+        excludedStatuses.add(OrderStatus.PAID);
+        firebaseManager.getTableOrder(userId, tableNumber, excludedStatuses, new Callback<Order>() {
+            @Override
+            public void onSuccess(Order result) {
+                List<CartItem> currItems = result.getItems();
+                currItems.addAll(cartItems);
+                float currBill = calculateUpdatedBill(currItems);
+                result.setItems(currItems);
+                result.setBillPrice(currBill);
+                result.setOrderStatus(OrderStatus.PREPARING);
+                updateOrder(result);
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Date today = getCurrentDateTime();
+                OrderStatus initialStatus = OrderStatus.PLACED;
+                billPrice = cartAdapter.getBillPrice();
+                Order order = new Order(cartItems, today, initialStatus, billPrice, tableNumber, currentUserId);
+                createOrder(order);
+            }
+        });
+    }
+    private float calculateUpdatedBill(List<CartItem> items) {
+        float bill = 0;
+        for (CartItem item : items) {
+            Dish currDish = item.getDish();
+            currDish.setAddedToCart(false);
+            updateDish(currDish);
+            float currPrice = item.getQuantity() * currDish.getPrice();
+            bill += currPrice;
+        }
+        return bill;
+    }
+
+    private void updateDish(Dish dish) {
+        firebaseManager.updateDish(dish, new Callback<Void>() {
             @Override
             public void onSuccess(Void result) {
             }

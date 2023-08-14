@@ -6,6 +6,7 @@ public enum OrderStatus {
     READY("Ready"),
     SERVED("Served"),
     COMPLETED("Completed"),
+    PAID("Paid"),
     CANCELED("Canceled");
 
     private final String status;

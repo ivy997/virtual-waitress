@@ -27,16 +27,19 @@ import com.example.virtualwaitress.models.CartItem;
 import com.example.virtualwaitress.models.Order;
 import com.example.virtualwaitress.util.Callback;
 import com.example.virtualwaitress.util.FirebaseManager;
+import com.example.virtualwaitress.util.RestaurantUser;
 import com.google.android.material.slider.Slider;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class NotificationsFragment extends Fragment {
 
     private FragmentNotificationsBinding binding;
     private FirebaseManager firebaseManager;
     private Order order;
+    private String currentUserId;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -48,6 +51,10 @@ public class NotificationsFragment extends Fragment {
 
         firebaseManager = new FirebaseManager();
 
+        if (RestaurantUser.getInstance() != null) {
+            currentUserId = RestaurantUser.getInstance().getUserId();
+        }
+
         /*final TextView textView = binding.textNotifications;
         notificationsViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);*/
 
@@ -57,12 +64,10 @@ public class NotificationsFragment extends Fragment {
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("MyPrefs", MODE_PRIVATE);
         int savedTableNumber = sharedPreferences.getInt("tableNumber", -1); // -1 is the default value if not found
         if (savedTableNumber != -1) {
-            getOrder(savedTableNumber, root);
+            getOrder(currentUserId, savedTableNumber, root);
         } else {
             Toast.makeText(getContext(), "Something went wrong", Toast.LENGTH_SHORT).show();
         }
-
-
 
         return root;
     }
@@ -73,20 +78,20 @@ public class NotificationsFragment extends Fragment {
         binding = null;
     }
 
-    private void getOrder(int tableNumber, View root) {
-        firebaseManager.getTableOrder(tableNumber, new Callback<Order>() {
+    private void getOrder(String userId, int tableNumber, View root) {
+        List<OrderStatus> excludedStatuses = new ArrayList<>();
+        excludedStatuses.add(OrderStatus.CANCELED);
+        excludedStatuses.add(OrderStatus.PAID);
+        firebaseManager.getTableOrder(userId, tableNumber, excludedStatuses, new Callback<Order>() {
             @Override
             public void onSuccess(Order result) {
                 order = result;
-                /*String[] orderStatusList = new String[]
-                        {"PLACED", "PREPARING", "READY", "SERVED", "COMPLETED", "CANCELED"};*/
+
                 updateOrderStatus(result.getOrderStatus(), root);
                 // Find the container view
                 FrameLayout includeContainer = root.findViewById(R.id.includeContainer);
                 // Set the visibility of the container view to control the visibility of the included layout
                 includeContainer.setVisibility(View.VISIBLE); // To make the included layout invisible
-
-
 
                 final TextView textView = binding.textNotifications;
                 textView.setVisibility(View.GONE);
@@ -99,7 +104,6 @@ public class NotificationsFragment extends Fragment {
                         if (updatedOrder != null && !updatedOrder.getOrderStatus().equals(result.getOrderStatus())) {
                             // The order has changed, update the UI or perform necessary actions
                             if (getActivity() instanceof MainActivity) {
-                                //updateOrderStatus();
                                 ((MainActivity) getActivity()).refreshActivity();
                                 Toast.makeText(getActivity(), "Refreshed", Toast.LENGTH_SHORT).show();
                             }
