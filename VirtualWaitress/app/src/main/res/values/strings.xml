@@ -2,6 +2,6 @@
     <string name="app_name">Virtual Waitress</string>
     <string name="title_home">Menu</string>
     <string name="title_dashboard">Cart</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_notifications">Order Tracker</string>
     <string name="title_logout">Log out</string>
 </resources>

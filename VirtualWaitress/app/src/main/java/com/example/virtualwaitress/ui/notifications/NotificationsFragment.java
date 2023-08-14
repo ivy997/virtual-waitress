@@ -2,11 +2,13 @@ package com.example.virtualwaitress.ui.notifications;
 
 import static android.content.Context.MODE_PRIVATE;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -21,6 +23,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.virtualwaitress.LoginActivity;
 import com.example.virtualwaitress.MainActivity;
 import com.example.virtualwaitress.R;
+import com.example.virtualwaitress.activities.OrderDetailsActivity;
 import com.example.virtualwaitress.databinding.FragmentNotificationsBinding;
 import com.example.virtualwaitress.enums.OrderStatus;
 import com.example.virtualwaitress.models.CartItem;
@@ -30,6 +33,7 @@ import com.example.virtualwaitress.util.FirebaseManager;
 import com.example.virtualwaitress.util.RestaurantUser;
 import com.google.android.material.slider.Slider;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -40,6 +44,8 @@ public class NotificationsFragment extends Fragment {
     private FirebaseManager firebaseManager;
     private Order order;
     private String currentUserId;
+    private Button payBtn;
+    private Button orderDetailsBtn;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -55,8 +61,26 @@ public class NotificationsFragment extends Fragment {
             currentUserId = RestaurantUser.getInstance().getUserId();
         }
 
-        /*final TextView textView = binding.textNotifications;
-        notificationsViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);*/
+        // Initialize Place Order button
+        orderDetailsBtn = root.findViewById(R.id.orderDetailsBtn);
+        payBtn = root.findViewById(R.id.payBtn);
+        orderDetailsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Open up a dialog with the details of the order -> all of the cart items and the quantity
+                Intent intent = new Intent(getActivity(), OrderDetailsActivity.class);
+                intent.putExtra("order", (Serializable) order);
+                startActivity(intent);
+                //Toast.makeText(getContext(), "", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        payBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateOrderStatus(OrderStatus.COMPLETED, root);
+            }
+        });
 
         // Check if table has an order placed
         // If yes: display statuses and manage them
@@ -88,10 +112,15 @@ public class NotificationsFragment extends Fragment {
                 order = result;
 
                 updateOrderStatus(result.getOrderStatus(), root);
-                // Find the container view
+
+                if (result.getOrderStatus() == OrderStatus.SERVED) {
+                    payBtn.setVisibility(View.VISIBLE);
+                }
+
                 FrameLayout includeContainer = root.findViewById(R.id.includeContainer);
                 // Set the visibility of the container view to control the visibility of the included layout
                 includeContainer.setVisibility(View.VISIBLE); // To make the included layout invisible
+                orderDetailsBtn.setVisibility(View.VISIBLE);
 
                 final TextView textView = binding.textNotifications;
                 textView.setVisibility(View.GONE);
@@ -124,6 +153,10 @@ public class NotificationsFragment extends Fragment {
                 final TextView textView = binding.textNotifications;
                 textView.setVisibility(View.VISIBLE);
                 includeContainer.setVisibility(View.GONE); // To make the included layout visible
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).refreshActivity();
+                    Toast.makeText(getActivity(), "Refreshed", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

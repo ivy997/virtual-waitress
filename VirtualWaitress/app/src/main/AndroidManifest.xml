@@ -16,6 +16,9 @@
         android:theme="@style/Theme.VirtualWaitress"
         tools:targetApi="31">
         <activity
+            android:name=".activities.OrderDetailsActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.CategoryDetailsActivity"
             android:exported="false" />
         <activity

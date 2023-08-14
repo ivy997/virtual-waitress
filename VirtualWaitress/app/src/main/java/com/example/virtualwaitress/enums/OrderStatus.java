@@ -1,6 +1,8 @@
 package com.example.virtualwaitress.enums;
 
-public enum OrderStatus {
+import java.io.Serializable;
+
+public enum OrderStatus implements Serializable {
     PLACED("Placed"),
     PREPARING("Preparing"),
     READY("Ready"),

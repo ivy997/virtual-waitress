@@ -1,6 +1,8 @@
 package com.example.virtualwaitress.models;
 
-public class CartItem {
+import java.io.Serializable;
+
+public class CartItem implements Serializable {
     private String cartItemId;
     private Dish dish;
     private int quantity;
