@@ -61,17 +61,14 @@ public class NotificationsFragment extends Fragment {
             currentUserId = RestaurantUser.getInstance().getUserId();
         }
 
-        // Initialize Place Order button
         orderDetailsBtn = root.findViewById(R.id.orderDetailsBtn);
         payBtn = root.findViewById(R.id.payBtn);
         orderDetailsBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Open up a dialog with the details of the order -> all of the cart items and the quantity
                 Intent intent = new Intent(getActivity(), OrderDetailsActivity.class);
                 intent.putExtra("order", (Serializable) order);
                 startActivity(intent);
-                //Toast.makeText(getContext(), "", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -153,10 +150,6 @@ public class NotificationsFragment extends Fragment {
                 final TextView textView = binding.textNotifications;
                 textView.setVisibility(View.VISIBLE);
                 includeContainer.setVisibility(View.GONE); // To make the included layout visible
-                if (getActivity() instanceof MainActivity) {
-                    ((MainActivity) getActivity()).refreshActivity();
-                    Toast.makeText(getActivity(), "Refreshed", Toast.LENGTH_SHORT).show();
-                }
             }
         });
     }
