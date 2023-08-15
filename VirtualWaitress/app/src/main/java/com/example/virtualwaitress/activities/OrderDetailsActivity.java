@@ -42,9 +42,6 @@ public class OrderDetailsActivity extends AppCompatActivity {
         itemAdapter.setOnLoadingCompleteListener(() -> {
             // Loading is complete, you can update the UI or perform actions here
             totalPrice.setText("Total: " + itemAdapter.getPrice() + " лв.");
-            // Update UI with the total price, etc.
         });
-
-
     }
 }

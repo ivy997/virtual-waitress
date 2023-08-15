@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Redirect the user to the login screen (Assuming LoginActivity is the login screen)
         Intent intent = new Intent(this, LoginActivity.class);
+        intent.putExtra("logout", "logout");
         startActivity(intent);
 
         // Finish the current activity to prevent the user from going back to it after logout

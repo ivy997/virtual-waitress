@@ -51,7 +51,6 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
     private List<CartItem> cartItems;
     private float billPrice;
     private String currentUserId;
-    private Order order;
     private int savedTableNumber;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -76,13 +75,7 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
         cartItems = new ArrayList<>();
         totalCartPrice = root.findViewById(R.id.totalTxtCart);
 
-        // Initialize RecyclerView
         cartRecyclerView = root.findViewById(R.id.cartRecyclerView);
-        /*cartRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, true));
-        cartItems = new ArrayList<>();
-        cartAdapter = new CartAdapter(cartItems);
-        cartRecyclerView.setAdapter(cartAdapter);*/
-
         cartAdapter = new CartAdapter(cartItems);
         cartRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
         cartAdapter.setOnItemClickListener(this);
@@ -95,10 +88,6 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
         placeOrderButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Perform actions to place the order
-                // ...
-
-                // Retrieve table number in another activity
                 SharedPreferences sharedPreferences = getContext().getSharedPreferences("MyPrefs", MODE_PRIVATE);
                 int savedTableNumber = sharedPreferences.getInt("tableNumber", -1); // -1 is the default value if not found
                 if (savedTableNumber != -1) {
@@ -106,7 +95,7 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
                 } else {
                     Toast.makeText(getContext(), "Something went wrong", Toast.LENGTH_SHORT).show();
                 }
-                //Toast.makeText(getContext(), "Order placed.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Order placed successfully.", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -133,7 +122,6 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
 
     @Override
     public void onCartItemChanged() {
-        // Update the total price dynamically
         billPrice = cartAdapter.getBillPrice();
         //totalCartPrice.setText(String.format("%.2f лв.", billPrice));
     }
@@ -141,11 +129,6 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
     @Override
     public void OnCartItemClick(int position) {
     }
-
-    /*private void addCartItem(CartItem cartItem) {
-        cartItems.add(cartItem);
-        cartAdapter.setCartItems(cartItems);
-    }*/
 
     @Override
     public void onDestroyView() {
