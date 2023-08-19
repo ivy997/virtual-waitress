@@ -1,53 +1,52 @@
 package com.example.virtualwaitress.ui.home;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.HorizontalScrollView;
-import android.widget.ImageView;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.cardview.widget.CardView;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.example.virtualwaitress.activities.CategoryDetailsActivity;
 import com.example.virtualwaitress.R;
 import com.example.virtualwaitress.adapters.CategoryAdapter;
 import com.example.virtualwaitress.adapters.DishAdapter;
 import com.example.virtualwaitress.databinding.FragmentHomeBinding;
+import com.example.virtualwaitress.dialogs.CartDialog;
+import com.example.virtualwaitress.models.CartItem;
 import com.example.virtualwaitress.models.Category;
 import com.example.virtualwaitress.models.Dish;
 import com.example.virtualwaitress.util.Callback;
 import com.example.virtualwaitress.util.FirebaseManager;
 import com.example.virtualwaitress.util.RestaurantUser;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClickListener, DishAdapter.OnItemClickListener {
 
     private FragmentHomeBinding binding;
     private RecyclerView categoryRecyclerView;
+    private RecyclerView dishRecyclerView;
     private LinearLayout containerLayout;
     private List<Category> categories;
     private CategoryAdapter categoryAdapter;
+    private DishAdapter dishAdapter;
     private FirebaseManager firebaseManager;
     private List<Dish> dishes;
     private String currentUserId;
@@ -65,6 +64,7 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
 
         // Initialize RecyclerViews
         categoryRecyclerView = root.findViewById(R.id.categoryRecyclerView);
+        dishRecyclerView = root.findViewById(R.id.dishRecyclerView);
 
         // Initialize data lists for menu items and categories
         dishes = new ArrayList<>();
@@ -74,10 +74,14 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
         // Initialize adapters and set them to respective RecyclerViews
         categoryAdapter = new CategoryAdapter(categories);
         categoryRecyclerView.setAdapter(categoryAdapter);
+        dishAdapter = new DishAdapter(dishes);
+        dishRecyclerView.setAdapter(dishAdapter);
 
         // Set layout managers for RecyclerViews (e.g., LinearLayoutManager or GridLayoutManager)
         categoryRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, true));
         categoryAdapter.setOnItemClickListener(this);
+        dishRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        dishAdapter.setOnItemClickListener(this);
 
         containerLayout = root.findViewById(R.id.containerLayout);
 
@@ -87,11 +91,14 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
 
         getCategories(currentUserId);
         getDishes();
+
         return root;
     }
 
     @Override
-    public void onItemClick(int position) {
+    public void onMenuItemClick(int position) {
+        Dish dish = dishes.get(position);
+        showAddToCartDialog(dish);
     }
 
     @Override
@@ -135,8 +142,6 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
             public void onSuccess(List<Category> result) {
                 categories = result;
                 categoryAdapter.setCategories(categories);
-                //dishAdapter.setCategories(categories);
-                //getDishes();
             }
 
             @Override
@@ -151,8 +156,7 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
             @Override
             public void onSuccess(List<Dish> result) {
                 dishes = result;
-                //dishAdapter.setDishes(dishes);
-                fillHorizontalScrollView();
+                dishAdapter.setDishes(dishes);
             }
 
             @Override
@@ -162,48 +166,81 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
         });
     }
 
-    private void fillHorizontalScrollView() {
-        for (Dish dish : dishes) {
-            CardView cardView = new CardView(getContext());
-            View itemView = LayoutInflater.from(getContext()).inflate(R.layout.menu_card_item, cardView, false);
-
-            cardView.addView(itemView);
-            cardView.setClickable(true);
-
-            TextView dishNameTextView = itemView.findViewById(R.id.dishTitleTxt);
-            TextView dishPriceTextView = itemView.findViewById(R.id.dishPriceTxt);
-            ImageView dishImage = itemView.findViewById(R.id.cardViewImg);
-            TextView categoryTextView = itemView.findViewById(R.id.categoryTxt);
-
-            Category category = findCategoryById(dish.getCategoryId());
-
-            if (category != null) {
-                categoryTextView.setText(category.getName());
-            }
-
-            dishNameTextView.setText(dish.getName());
-            dishPriceTextView.setText(String.valueOf("$" + dish.getPrice()));
-            String imageUrl = dish.getImageUrl();
-
-            Glide.with(getContext())
-                    .load(imageUrl)
-                    .fitCenter()
-                    .into(dishImage);
-
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Toast.makeText(getContext(), "Clicked " + dish.getName(), Toast.LENGTH_SHORT).show();
-                }
-            });
-
-            containerLayout.addView(cardView);
-        }
-    }
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+
+    private void showAddToCartDialog(Dish dish) {
+        CartDialog dialog = new CartDialog(getContext(), dish);
+        dialog.show();
+
+        Button btnAddToCart = dialog.findViewById(R.id.addToCartButton);
+        btnAddToCart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int count = dialog.getCount();
+                addToCart(dish, count);
+                dialog.dismiss();
+            }
+        });
+    }
+
+    private void addToCart(Dish dish, int count) {
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("MyPrefs", MODE_PRIVATE);
+        int savedTableNumber = sharedPreferences.getInt("tableNumber", -1); // -1 is the default value if not found
+        if (savedTableNumber != -1) {
+            getCartItems(savedTableNumber, dish, count);
+        }
+    }
+
+    private void addCartItem(CartItem item) {
+        firebaseManager.addCartItem(item, new Callback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                item.setCartItemId(result);
+                updateCartItem(item);
+                Toast.makeText(getActivity(), "Item added to cart successfully.", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+            }
+        });
+    }
+
+    private void updateCartItem(CartItem item) {
+        firebaseManager.updateCartItem(item, new Callback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+            }
+        });
+    }
+
+    private void getCartItems(int savedTableNumber, Dish dish, int count) {
+        firebaseManager.getCart(currentUserId, savedTableNumber, new Callback<List<CartItem>>() {
+            @Override
+            public void onSuccess(List<CartItem> result) {
+                for (CartItem cartItem : result) {
+                    String currDishId = cartItem.getDish().getDishId();
+                    if (Objects.equals(currDishId, dish.getDishId())) {
+                        Toast.makeText(getActivity(), "Menu item is already added to cart", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                }
+                CartItem item = new CartItem(dish, count, savedTableNumber, currentUserId);
+                addCartItem(item);
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(getContext(), errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

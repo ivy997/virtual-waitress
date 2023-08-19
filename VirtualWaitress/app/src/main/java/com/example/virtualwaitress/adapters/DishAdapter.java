@@ -29,7 +29,7 @@ public class DishAdapter extends RecyclerView.Adapter<DishAdapter.DishViewHolder
     private FirebaseManager firebaseManager = new FirebaseManager();
 
     public interface OnItemClickListener {
-        void onItemClick(int position);
+        void onMenuItemClick(int position);
     }
 
     public void setOnItemClickListener(DishAdapter.OnItemClickListener listener) {
@@ -59,7 +59,7 @@ public class DishAdapter extends RecyclerView.Adapter<DishAdapter.DishViewHolder
                     if (listener != null) {
                         int position = getAdapterPosition();
                         if (position != RecyclerView.NO_POSITION) {
-                            listener.onItemClick(position);
+                            listener.onMenuItemClick(position);
                         }
                     }
                 }
@@ -107,5 +107,10 @@ public class DishAdapter extends RecyclerView.Adapter<DishAdapter.DishViewHolder
                 Toast.makeText(context.getApplicationContext(), "Error: " + errorMessage, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    public void setDishes(List<Dish> dishes) {
+        this.dishes = dishes;
+        notifyDataSetChanged();
     }
 }
