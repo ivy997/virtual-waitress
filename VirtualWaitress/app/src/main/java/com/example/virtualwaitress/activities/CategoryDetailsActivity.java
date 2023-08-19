@@ -32,6 +32,7 @@ import org.checkerframework.checker.units.qual.C;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Objects;
 
 public class CategoryDetailsActivity extends AppCompatActivity implements DishAdapter.OnItemClickListener {
 
@@ -40,6 +41,7 @@ public class CategoryDetailsActivity extends AppCompatActivity implements DishAd
     private List<Dish> dishes;
     private RecyclerView dishRecyclerView;
     private String currentUserId;
+    private List<CartItem> cartItems;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +72,7 @@ public class CategoryDetailsActivity extends AppCompatActivity implements DishAd
     }
 
     @Override
-    public void onItemClick(int position) {
+    public void onMenuItemClick(int position) {
         Dish dish = dishes.get(position);
         showAddToCartDialog(dish);
     }
@@ -94,12 +96,7 @@ public class CategoryDetailsActivity extends AppCompatActivity implements DishAd
         SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
         int savedTableNumber = sharedPreferences.getInt("tableNumber", -1); // -1 is the default value if not found
         if (savedTableNumber != -1) {
-            if (!dish.isAddedToCart()) {
-                CartItem item = new CartItem(dish, count, savedTableNumber, currentUserId);
-                addCartItem(item);
-                dish.setAddedToCart(true);
-                dishAdapter.updateDish(dish);
-            }
+            getCartItems(savedTableNumber, dish, count);
         }
     }
 
@@ -126,6 +123,30 @@ public class CategoryDetailsActivity extends AppCompatActivity implements DishAd
 
             @Override
             public void onError(String errorMessage) {
+            }
+        });
+    }
+
+    private void getCartItems(int savedTableNumber, Dish dish, int count) {
+        firebaseManager.getCart(currentUserId, savedTableNumber, new Callback<List<CartItem>>() {
+            @Override
+            public void onSuccess(List<CartItem> result) {
+                for (CartItem cartItem : result) {
+                    String currDishId = cartItem.getDish().getDishId();
+                    if (Objects.equals(currDishId, dish.getDishId())) {
+                        Toast.makeText(CategoryDetailsActivity.this, "Menu item is already added to cart", Toast.LENGTH_SHORT).show();
+                        return;
+                        //dish.setAddedToCart(true);
+                        //dishAdapter.updateDish(dish);
+                    }
+                }
+                CartItem item = new CartItem(dish, count, savedTableNumber, currentUserId);
+                addCartItem(item);
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(getApplicationContext(), errorMessage, Toast.LENGTH_SHORT).show();
             }
         });
     }
