@@ -75,7 +75,11 @@ public class NotificationsFragment extends Fragment {
         payBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                updateOrderStatus(OrderStatus.COMPLETED, root);
+                order.setOrderStatus(OrderStatus.COMPLETED);
+                updateOrder(order);
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).refreshActivity();
+                }
             }
         });
 
@@ -131,7 +135,6 @@ public class NotificationsFragment extends Fragment {
                             // The order has changed, update the UI or perform necessary actions
                             if (getActivity() instanceof MainActivity) {
                                 ((MainActivity) getActivity()).refreshActivity();
-                                Toast.makeText(getActivity(), "Refreshed", Toast.LENGTH_SHORT).show();
                             }
                         }
                     }
@@ -203,5 +206,18 @@ public class NotificationsFragment extends Fragment {
         View served = root.findViewById(R.id.SERVED);
         View completed = root.findViewById(R.id.COMPLETED);
         return new View[] {placed, preparing, ready, served, completed};
+    }
+
+    private void updateOrder(Order order) {
+        firebaseManager.updateOrder(order, new Callback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(getContext(), "Something went wrong", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

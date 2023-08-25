@@ -2,6 +2,7 @@ package com.example.virtualwaitress.util;
 
 import android.nfc.Tag;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,6 +27,8 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -122,6 +125,33 @@ public class FirebaseManager {
                             callback.onError(task.getException().getMessage());
                         }
                     }
+                });
+    }
+
+    public void getDishesByName(String userId, String query, Callback<List<Dish>> callback) {
+        //List<String> queryKeywords = Arrays.asList(query.toLowerCase().split(""));
+
+        dishesRef
+                .whereEqualTo("userId", userId)
+                .whereArrayContains("keywords", query.toLowerCase())
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            List<Dish> dishList = new ArrayList<>();
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Dish dish = document.toObject(Dish.class);
+                                dishList.add(dish);
+                            }
+                            callback.onSuccess(dishList);
+                        } else {
+                            callback.onError(task.getException().getMessage());
+                            Log.d("FirestoreDebug", "No matching documents.");
+                        }
+                    }
+                }).addOnFailureListener(e -> {
+                    callback.onError(e.getMessage());
                 });
     }
 
@@ -279,7 +309,6 @@ public class FirebaseManager {
                             // Here you can access the data using documentSnapshot.getData()
                             if (documentSnapshot.exists()) {
                                 Order order = documentSnapshot.toObject(Order.class);
-
                                 callback.onSuccess(order);
                             } else {
                                 Log.d("FirestoreDebug", "Document doesn't exist.");
