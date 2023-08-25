@@ -5,11 +5,13 @@ import static android.content.Context.MODE_PRIVATE;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,6 +46,7 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
     private RecyclerView categoryRecyclerView;
     private RecyclerView dishRecyclerView;
     private LinearLayout containerLayout;
+    private SearchView searchView;
     private List<Category> categories;
     private CategoryAdapter categoryAdapter;
     private DishAdapter dishAdapter;
@@ -61,6 +64,23 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
 
         final TextView textView = binding.textHome;
         homeViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
+
+        searchView = root.findViewById(R.id.searchView);
+        searchView.setQueryHint("Search");
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                performSearch(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                getDishes();
+                return true;
+            }
+        });
 
         // Initialize RecyclerViews
         categoryRecyclerView = root.findViewById(R.id.categoryRecyclerView);
@@ -103,13 +123,23 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
 
     @Override
     public void OnCategoryClick(int position) {
-        Category category = categories.get(position);
-        Intent intent = new Intent(getActivity(), CategoryDetailsActivity.class);
-        String categoryId = category.getCategoryId();
-        List<Dish> filteredDishes = getDishesByCategory(categoryId);
-        intent.putExtra("categoryId", categoryId);
-        intent.putExtra("dishes", (Serializable) filteredDishes);
-        startActivity(intent);
+        firebaseManager.getDishes(currentUserId, new Callback<List<Dish>>() {
+                    @Override
+                    public void onSuccess(List<Dish> result) {
+                        dishes = result;
+                        Category category = categories.get(position);
+                        Intent intent = new Intent(getActivity(), CategoryDetailsActivity.class);
+                        String categoryId = category.getCategoryId();
+                        List<Dish> filteredDishes = getDishesByCategory(categoryId);
+                        intent.putExtra("categoryId", categoryId);
+                        intent.putExtra("dishes", (Serializable) filteredDishes);
+                        startActivity(intent);
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+                    }
+                });
     }
 
     private List<Dish> getDishesByCategory(String categoryId) {
@@ -240,6 +270,32 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
             @Override
             public void onError(String errorMessage) {
                 Toast.makeText(getContext(), errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void performSearch(String query) {
+        if (!TextUtils.isEmpty(query)) {
+            getDishesByName(currentUserId, query);
+            return;
+        }
+
+        // Here, you can use the 'query' to search for dishes in your data source
+        // Implement your search logic here
+        // For example, you can filter and display the results in a RecyclerView
+    }
+
+    private void getDishesByName(String userId, String query) {
+        firebaseManager.getDishesByName(userId, query, new Callback<List<Dish>>() {
+            @Override
+            public void onSuccess(List<Dish> result) {
+                dishes.clear();
+                dishAdapter.setDishes(result);
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Toast.makeText(getContext(), errorMessage, Toast.LENGTH_LONG).show();
             }
         });
     }

@@ -88,14 +88,18 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
         placeOrderButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SharedPreferences sharedPreferences = getContext().getSharedPreferences("MyPrefs", MODE_PRIVATE);
-                int savedTableNumber = sharedPreferences.getInt("tableNumber", -1); // -1 is the default value if not found
-                if (savedTableNumber != -1) {
-                    getOrder(currentUserId, savedTableNumber);
+                if (cartItems.size() != 0) {
+                    SharedPreferences sharedPreferences = getContext().getSharedPreferences("MyPrefs", MODE_PRIVATE);
+                    int savedTableNumber = sharedPreferences.getInt("tableNumber", -1); // -1 is the default value if not found
+                    if (savedTableNumber != -1) {
+                        getOrder(currentUserId, savedTableNumber);
+                    } else {
+                        Toast.makeText(getContext(), "Something went wrong", Toast.LENGTH_SHORT).show();
+                    }
+                    Toast.makeText(getContext(), "Order placed successfully.", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(getContext(), "Something went wrong", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Add an item to your cart first", Toast.LENGTH_SHORT).show();
                 }
-                Toast.makeText(getContext(), "Order placed successfully.", Toast.LENGTH_SHORT).show();
             }
         });
 

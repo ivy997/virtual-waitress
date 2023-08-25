@@ -4,10 +4,13 @@ import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
 
 public class Dish implements Serializable {
     private String dishId;
     private String name;
+    private List<String> keywords;
     private String description;
     private String imageUrl;
     private float price;
@@ -20,6 +23,7 @@ public class Dish implements Serializable {
 
     public Dish(String name, String description, String imageUrl, float price, String categoryId, String userId) {
         this.name = name;
+        this.keywords.add(Arrays.toString(name.toLowerCase().split("")));
         this.description = description;
         this.imageUrl = imageUrl;
         this.price = price;
@@ -89,5 +93,13 @@ public class Dish implements Serializable {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public List<String> getKeywords() {
+        return keywords;
+    }
+
+    public void setKeywords(List<String> keywords) {
+        this.keywords = keywords;
     }
 }

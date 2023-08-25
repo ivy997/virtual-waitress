@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.NumberPicker;
@@ -47,6 +48,9 @@ public class CategoryDetailsActivity extends AppCompatActivity implements DishAd
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_category_details);
+
+        // Enable the up button
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         firebaseManager = new FirebaseManager();
 
@@ -149,5 +153,17 @@ public class CategoryDetailsActivity extends AppCompatActivity implements DishAd
                 Toast.makeText(getApplicationContext(), errorMessage, Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }

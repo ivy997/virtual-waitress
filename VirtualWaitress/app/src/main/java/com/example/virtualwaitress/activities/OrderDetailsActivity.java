@@ -1,6 +1,7 @@
 package com.example.virtualwaitress.activities;
 
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,6 +29,9 @@ public class OrderDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_details);
 
+        // Enable the up button
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         totalPrice = findViewById(R.id.infoTxt);
         firebaseManager = new FirebaseManager();
 
@@ -43,5 +47,18 @@ public class OrderDetailsActivity extends AppCompatActivity {
             // Loading is complete, you can update the UI or perform actions here
             totalPrice.setText("Total: " + itemAdapter.getPrice() + " лв.");
         });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == android.R.id.home) {
+            // "Up" button pressed
+            onBackPressed();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 }

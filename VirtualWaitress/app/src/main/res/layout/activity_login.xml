@@ -24,13 +24,13 @@
         android:id="@+id/loginUndersign"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
         android:text="Sign in to your account"
         android:textSize="15sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.057"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/loginSign" />
+        app:layout_constraintTop_toBottomOf="@+id/loginSign"
+        app:layout_constraintBottom_toTopOf="@+id/etEmail"/>
 
     <EditText
         android:id="@+id/etEmail"
