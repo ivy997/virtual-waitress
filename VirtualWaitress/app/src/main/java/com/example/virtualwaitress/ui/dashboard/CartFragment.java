@@ -40,13 +40,11 @@ import java.util.Date;
 import java.util.List;
 
 public class CartFragment extends Fragment implements CartAdapter.OnItemClickListener, CartAdapter.OnCartItemChangedListener {
-
     private FragmentCartBinding binding;
     private FirebaseManager firebaseManager;
     private RecyclerView cartRecyclerView;
     private Button placeOrderButton;
     private TextView totalCartPrice;
-
     private CartAdapter cartAdapter;
     private List<CartItem> cartItems;
     private float billPrice;
@@ -55,14 +53,8 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        CartViewModel cartViewModel =
-                new ViewModelProvider(this).get(CartViewModel.class);
-
         binding = FragmentCartBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-
-        final TextView textView = binding.textDashboard;
-        cartViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
 
         if (RestaurantUser.getInstance() != null) {
             currentUserId = RestaurantUser.getInstance().getUserId();
@@ -127,7 +119,6 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
     @Override
     public void onCartItemChanged() {
         billPrice = cartAdapter.getBillPrice();
-        //totalCartPrice.setText(String.format("%.2f лв.", billPrice));
     }
 
     @Override
@@ -148,7 +139,6 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
                 cartItems = result;
                 cartAdapter.setCartItems(cartItems);
                 cartAdapter.setTotalPriceTV(totalCartPrice);
-                //billPrice = cartAdapter.getBillPrice();
             }
 
             @Override
@@ -165,9 +155,7 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
                 order.setOrderId(result);
                 updateOrder(order);
                 Toast.makeText(getActivity(), "Order placed successfully.", Toast.LENGTH_SHORT).show();
-                //cartAdapter.deleteCartItems();
             }
-
             @Override
             public void onError(String errorMessage) {
             }
@@ -182,7 +170,6 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
                     cartAdapter.deleteCartItems(currentUserId, savedTableNumber);
                 }
             }
-
             @Override
             public void onError(String errorMessage) {
             }
@@ -204,7 +191,6 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
                 result.setOrderStatus(OrderStatus.PREPARING);
                 updateOrder(result);
             }
-
             @Override
             public void onError(String errorMessage) {
                 Date today = getCurrentDateTime();
@@ -232,7 +218,6 @@ public class CartFragment extends Fragment implements CartAdapter.OnItemClickLis
             @Override
             public void onSuccess(Void result) {
             }
-
             @Override
             public void onError(String errorMessage) {
             }

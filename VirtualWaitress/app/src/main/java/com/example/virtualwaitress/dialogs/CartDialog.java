@@ -22,9 +22,7 @@ public class CartDialog extends Dialog {
     private TextView title;
     private TextView price;
     private TextView desc;
-
     private Dish dish;
-
     private int count = 1;
 
     public CartDialog(@NonNull Context context, Dish dish) {

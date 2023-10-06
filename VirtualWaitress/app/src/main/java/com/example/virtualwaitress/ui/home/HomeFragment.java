@@ -2,14 +2,18 @@ package com.example.virtualwaitress.ui.home;
 
 import static android.content.Context.MODE_PRIVATE;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -41,7 +45,6 @@ import java.util.List;
 import java.util.Objects;
 
 public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClickListener, DishAdapter.OnItemClickListener {
-
     private FragmentHomeBinding binding;
     private RecyclerView categoryRecyclerView;
     private RecyclerView dishRecyclerView;
@@ -56,14 +59,8 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        HomeViewModel homeViewModel =
-                new ViewModelProvider(this).get(HomeViewModel.class);
-
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-
-        final TextView textView = binding.textHome;
-        homeViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
 
         searchView = root.findViewById(R.id.searchView);
         searchView.setQueryHint("Search");
@@ -97,10 +94,9 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
         dishAdapter = new DishAdapter(dishes);
         dishRecyclerView.setAdapter(dishAdapter);
 
-        // Set layout managers for RecyclerViews (e.g., LinearLayoutManager or GridLayoutManager)
         categoryRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, true));
         categoryAdapter.setOnItemClickListener(this);
-        dishRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
+        dishRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
         dishAdapter.setOnItemClickListener(this);
 
         containerLayout = root.findViewById(R.id.containerLayout);
@@ -155,17 +151,6 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
         return null;
     }
 
-    private Category findCategoryById(String categoryId) {
-        if (categories != null) {
-            for (Category category : categories) {
-                if (category.getCategoryId().equals(categoryId)) {
-                    return category;
-                }
-            }
-        }
-        return null;
-    }
-
     private void getCategories(String userId) {
         firebaseManager.getCategories(userId, new Callback<List<Category>>() {
             @Override
@@ -176,7 +161,6 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
 
             @Override
             public void onError(String errorMessage) {
-                // Handle error
             }
         });
     }
@@ -277,12 +261,7 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
     private void performSearch(String query) {
         if (!TextUtils.isEmpty(query)) {
             getDishesByName(currentUserId, query);
-            return;
         }
-
-        // Here, you can use the 'query' to search for dishes in your data source
-        // Implement your search logic here
-        // For example, you can filter and display the results in a RecyclerView
     }
 
     private void getDishesByName(String userId, String query) {
@@ -299,4 +278,17 @@ public class HomeFragment extends Fragment implements CategoryAdapter.OnItemClic
             }
         });
     }
+
+    /*@Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_UP) {
+            hideKeyboard();
+        }
+        return true; // Consume the event
+    }
+
+    private void hideKeyboard() {
+        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        //imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+    }*/
 }

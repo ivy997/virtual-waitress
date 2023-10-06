@@ -17,7 +17,6 @@ import com.example.virtualwaitress.util.FirebaseManager;
 import java.util.List;
 
 public class OrderDetailsActivity extends AppCompatActivity {
-
     private FirebaseManager firebaseManager;
     private CartItemAdapter itemAdapter;
     private List<CartItem> items;
@@ -31,6 +30,7 @@ public class OrderDetailsActivity extends AppCompatActivity {
 
         // Enable the up button
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle("Order Details");
 
         totalPrice = findViewById(R.id.infoTxt);
         firebaseManager = new FirebaseManager();
@@ -44,8 +44,7 @@ public class OrderDetailsActivity extends AppCompatActivity {
         itemsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         itemsRecyclerView.setAdapter(itemAdapter);
         itemAdapter.setOnLoadingCompleteListener(() -> {
-            // Loading is complete, you can update the UI or perform actions here
-            totalPrice.setText("Total: " + itemAdapter.getPrice() + " лв.");
+            totalPrice.setText(String.valueOf("Total: " + itemAdapter.getPrice() + " лв."));
         });
     }
 

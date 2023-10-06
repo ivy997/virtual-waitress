@@ -82,7 +82,7 @@ public class DishAdapter extends RecyclerView.Adapter<DishAdapter.DishViewHolder
         Dish dish = dishes.get(position);
 
         holder.dishNameTextView.setText(dish.getName());
-        holder.dishPriceTextView.setText(String.valueOf("$" + dish.getPrice()));
+        holder.dishPriceTextView.setText(String.valueOf(dish.getPrice() + " лв."));
         imageUrl = dish.getImageUrl();
 
         Glide.with(context)

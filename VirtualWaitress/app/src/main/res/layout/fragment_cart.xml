@@ -90,69 +90,7 @@
                     app:layout_constraintTop_toTopOf="@+id/total" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <TextView
-                android:id="@+id/infoTxt"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Information"
-                android:textColor="@color/black"
-                android:textSize="18sp"
-                android:textStyle="bold" />
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/white_background"
-                android:padding="8dp">
-
-                <View
-                    android:id="@+id/infoSeparator"
-                    android:layout_width="wrap_content"
-                    android:layout_height="1dp"
-                    android:layout_marginBottom="8dp"
-                    android:background="@color/grey"
-                    app:layout_constraintBottom_toTopOf="@+id/paymentMethod"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent" />
-
-                <TextView
-                    android:id="@+id/paymentMethod"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:text="Payment Method"
-                    app:layout_constraintStart_toStartOf="@+id/infoSeparator"
-                    app:layout_constraintTop_toBottomOf="@+id/infoSeparator" />
-
-                <ImageView
-                    android:id="@+id/creditCard"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    app:layout_constraintStart_toStartOf="@+id/paymentMethod"
-                    app:layout_constraintTop_toBottomOf="@+id/paymentMethod"
-                    app:srcCompat="@drawable/credit_card" />
-
-                <TextView
-                    android:id="@+id/cashOption"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:text="Cash"
-                    app:layout_constraintBottom_toBottomOf="@+id/creditCard"
-                    app:layout_constraintStart_toEndOf="@+id/creditCard"
-                    app:layout_constraintTop_toTopOf="@+id/creditCard" />
-
-                <ImageView
-                    android:id="@+id/choosePaymentArrow"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintBottom_toBottomOf="@+id/cashOption"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/paymentMethod"
-                    app:srcCompat="@drawable/arrow_detail" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <Button
                 android:id="@+id/orderBtn"

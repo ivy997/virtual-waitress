@@ -47,7 +47,6 @@ public class FirebaseManager {
         cartRef = db.collection("Cart");
         ordersRef = db.collection("Orders");
     }
-
     public void getCategories(String userId, Callback<List<Category>> callback) {
         categoriesRef
                 .whereEqualTo("userId", userId)
@@ -62,15 +61,12 @@ public class FirebaseManager {
                                 categories.add(category);
                             }
                             callback.onSuccess(categories);
-                        } else {
-                            Log.d("TAG", "Error getting documents: ", task.getException());
-                        }
+                        } else {}
                     }
                 }).addOnFailureListener(e -> {
                     callback.onError(e.getMessage());
                 });
     }
-
     public void getDishes(String userId, Callback<List<Dish>> callback) {
         dishesRef
                 .whereEqualTo("userId", userId)
@@ -87,7 +83,6 @@ public class FirebaseManager {
                     callback.onError(e.getMessage());
                 });
     }
-
     public void updateDish(Dish dish, Callback<Void> callback) {
         DocumentReference documentRef = dishesRef.document(dish.getDishId());
 
@@ -107,30 +102,7 @@ public class FirebaseManager {
                     callback.onError(e.getMessage());
                 });
     }
-
-    public void getDishesByCategory(String categoryId, Callback<List<Dish>> callback) {
-        dishesRef.whereEqualTo("categoryId", categoryId)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            List<Dish> dishList = new ArrayList<>();
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Dish dish = document.toObject(Dish.class);
-                                dishList.add(dish);
-                            }
-                            callback.onSuccess(dishList);
-                        } else {
-                            callback.onError(task.getException().getMessage());
-                        }
-                    }
-                });
-    }
-
     public void getDishesByName(String userId, String query, Callback<List<Dish>> callback) {
-        //List<String> queryKeywords = Arrays.asList(query.toLowerCase().split(""));
-
         dishesRef
                 .whereEqualTo("userId", userId)
                 .whereArrayContains("keywords", query.toLowerCase())
@@ -154,20 +126,16 @@ public class FirebaseManager {
                     callback.onError(e.getMessage());
                 });
     }
-
     public void addCartItem(CartItem item, Callback<String> callback) {
         cartRef.add(item)
                 .addOnSuccessListener(documentReference -> {
-                    // CartItem added successfully
                     String cartItemId = documentReference.getId();
                     callback.onSuccess(cartItemId);
                 })
                 .addOnFailureListener(e -> {
-                    // Error adding CartItem
                     callback.onError(e.getMessage());
                 });
     }
-
     public void updateCartItem(CartItem item, Callback<Void> callback) {
         DocumentReference documentRef = cartRef.document(item.getCartItemId());
 
@@ -184,7 +152,6 @@ public class FirebaseManager {
                     callback.onError(e.getMessage());
                 });
     }
-
     public void deleteCartItem(String cartItemId, Callback<Void> callback) {
         cartRef.document(cartItemId)
                 .delete()
@@ -197,12 +164,9 @@ public class FirebaseManager {
                 });
     }
     public void deleteCartItems(String userId, int tableNumber, Callback<Boolean> callback) {
-        // Create a query to retrieve the cart items
         Query query = cartRef
                 .whereEqualTo("userId", userId)
                 .whereEqualTo("tableNumber", tableNumber);
-
-        // Execute the query
         query.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -214,18 +178,14 @@ public class FirebaseManager {
                                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                                     @Override
                                     public void onSuccess(Void aVoid) {
-                                        // Cart item successfully deleted
-                                        // You can perform additional actions or handle success here
                                     }
                                 })
                                 .addOnFailureListener(new OnFailureListener() {
                                     @Override
                                     public void onFailure(@NonNull Exception e) {
-                                        // Handle deletion failure
                                     }
                                 });
                     }
-                    // Callback to indicate success
                     callback.onSuccess(true);
                 } else {
                     // Handle query failure
@@ -234,7 +194,6 @@ public class FirebaseManager {
             }
         });
     }
-
     public void getCart(String userId, int tableNumber, Callback<List<CartItem>> callback) {
         try {
             cartRef.whereEqualTo("userId", userId)
@@ -263,7 +222,6 @@ public class FirebaseManager {
             Log.d("Try catch", e.getMessage());
         }
     }
-
     public void createOrder(Order order, Callback<String> callback) {
         ordersRef.add(order)
                 .addOnSuccessListener(documentReference -> {
@@ -274,7 +232,6 @@ public class FirebaseManager {
                     callback.onError(e.getMessage());
                 });
     }
-
     public void updateOrder(Order order, Callback<Void> callback) {
         DocumentReference documentRef = ordersRef.document(order.getOrderId());
 
@@ -293,7 +250,6 @@ public class FirebaseManager {
                     callback.onError(e.getMessage());
                 });
     }
-
     public void getTableOrder(String userId, int tableNumber, List<OrderStatus> excludedStatuses, Callback<Order> callback) {
         ordersRef
                 .whereEqualTo("userId", userId)
@@ -305,8 +261,6 @@ public class FirebaseManager {
                         QuerySnapshot querySnapshot = task.getResult();
                         if (querySnapshot != null && !querySnapshot.isEmpty()) {
                             DocumentSnapshot documentSnapshot = querySnapshot.getDocuments().get(0);
-                            // Handle the retrieved order document
-                            // Here you can access the data using documentSnapshot.getData()
                             if (documentSnapshot.exists()) {
                                 Order order = documentSnapshot.toObject(Order.class);
                                 callback.onSuccess(order);
@@ -325,32 +279,19 @@ public class FirebaseManager {
                     callback.onError(e.getMessage());
                 });
     }
-
-    // Method to listen for real-time changes to the Order document
     public void listenForOrderChanges(String orderId, Callback<Order> callback) {
-        // Get the document reference for the specific order
         DocumentReference orderDocument = ordersRef.document(orderId);
-
-        // Add a snapshot listener to the specific order document
         orderDocument.addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
                 if (e != null) {
-                    // Handle the error
                     callback.onError(e.getMessage());
-                    //return;
                 }
 
                 if (documentSnapshot != null && documentSnapshot.exists()) {
-                    // The order document exists and has data
-                    // Extract the order data and update the UI
                     Order order = documentSnapshot.toObject(Order.class);
                     callback.onSuccess(order);
-                    // Update the UI with the order details
-                } else {
-                    // The order document doesn't exist or has been deleted
-                    // Handle the case where the order document is no longer available\
-                }
+                } else {}
             }
         });
     }

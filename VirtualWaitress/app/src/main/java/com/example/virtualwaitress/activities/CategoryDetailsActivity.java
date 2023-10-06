@@ -42,7 +42,6 @@ public class CategoryDetailsActivity extends AppCompatActivity implements DishAd
     private List<Dish> dishes;
     private RecyclerView dishRecyclerView;
     private String currentUserId;
-    private List<CartItem> cartItems;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +50,7 @@ public class CategoryDetailsActivity extends AppCompatActivity implements DishAd
 
         // Enable the up button
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle("Category Details");
 
         firebaseManager = new FirebaseManager();
 
@@ -58,18 +58,10 @@ public class CategoryDetailsActivity extends AppCompatActivity implements DishAd
             currentUserId = RestaurantUser.getInstance().getUserId();
         }
 
-        SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE);
-        int savedTableNumber = sharedPreferences.getInt("tableNumber", -1); // -1 is the default value if not found
-        if (savedTableNumber != -1) {
-
-        }
-
-        Bundle extras = getIntent().getExtras();
-        //String categoryId = extras.getString("categoryId");
         dishes = (List<Dish>) getIntent().getSerializableExtra("dishes");
         dishRecyclerView = findViewById(R.id.dishRecyclerView);
         dishAdapter = new DishAdapter(dishes);
-        dishRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+        dishRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         dishRecyclerView.setHasFixedSize(true);
         dishAdapter.setOnItemClickListener(this);
         dishRecyclerView.setAdapter(dishAdapter);
@@ -138,10 +130,9 @@ public class CategoryDetailsActivity extends AppCompatActivity implements DishAd
                 for (CartItem cartItem : result) {
                     String currDishId = cartItem.getDish().getDishId();
                     if (Objects.equals(currDishId, dish.getDishId())) {
-                        Toast.makeText(CategoryDetailsActivity.this, "Menu item is already added to cart", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(CategoryDetailsActivity.this,
+                                "Menu item is already added to cart", Toast.LENGTH_SHORT).show();
                         return;
-                        //dish.setAddedToCart(true);
-                        //dishAdapter.updateDish(dish);
                     }
                 }
                 CartItem item = new CartItem(dish, count, savedTableNumber, currentUserId);

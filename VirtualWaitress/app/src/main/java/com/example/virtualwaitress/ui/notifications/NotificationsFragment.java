@@ -39,7 +39,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class NotificationsFragment extends Fragment {
-
     private FragmentNotificationsBinding binding;
     private FirebaseManager firebaseManager;
     private Order order;
@@ -49,9 +48,6 @@ public class NotificationsFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        NotificationsViewModel notificationsViewModel =
-                new ViewModelProvider(this).get(NotificationsViewModel.class);
-
         binding = FragmentNotificationsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
@@ -83,9 +79,6 @@ public class NotificationsFragment extends Fragment {
             }
         });
 
-        // Check if table has an order placed
-        // If yes: display statuses and manage them
-        // If no: display no order to track
         SharedPreferences sharedPreferences = getContext().getSharedPreferences("MyPrefs", MODE_PRIVATE);
         int savedTableNumber = sharedPreferences.getInt("tableNumber", -1); // -1 is the default value if not found
         if (savedTableNumber != -1) {
@@ -119,8 +112,7 @@ public class NotificationsFragment extends Fragment {
                 }
 
                 FrameLayout includeContainer = root.findViewById(R.id.includeContainer);
-                // Set the visibility of the container view to control the visibility of the included layout
-                includeContainer.setVisibility(View.VISIBLE); // To make the included layout invisible
+                includeContainer.setVisibility(View.VISIBLE);
                 orderDetailsBtn.setVisibility(View.VISIBLE);
 
                 final TextView textView = binding.textNotifications;

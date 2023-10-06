@@ -17,7 +17,6 @@ public class RestaurantUser extends Application {
     }
 
     public RestaurantUser() {
-
     }
 
     public String getEmail() {

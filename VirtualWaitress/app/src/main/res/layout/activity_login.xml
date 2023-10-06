@@ -10,15 +10,15 @@
         android:id="@+id/loginSign"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="92dp"
+        android:layout_marginTop="90dp"
         android:text="Login"
         android:textColor="@color/black"
         android:textSize="35sp"
         android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.046"
+        android:layout_marginStart="15dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/loginUndersign"/>
 
     <TextView
         android:id="@+id/loginUndersign"
@@ -26,11 +26,10 @@
         android:layout_height="wrap_content"
         android:text="Sign in to your account"
         android:textSize="15sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.057"
+        android:layout_marginStart="15dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/loginSign"
-        app:layout_constraintBottom_toTopOf="@+id/etEmail"/>
+        app:layout_constraintBottom_toTopOf="@id/etEmail"/>
 
     <EditText
         android:id="@+id/etEmail"

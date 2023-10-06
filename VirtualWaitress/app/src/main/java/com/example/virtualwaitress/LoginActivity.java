@@ -127,9 +127,7 @@ public class LoginActivity extends AppCompatActivity {
                                         .addSnapshotListener(new EventListener<QuerySnapshot>() {
                                             @Override
                                             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                                                if (error != null) {
-
-                                                }
+                                                if (error != null) {}
                                                 assert value != null;
                                                 if (!value.isEmpty()) {
                                                     for (QueryDocumentSnapshot snapshot : value) {
@@ -150,16 +148,13 @@ public class LoginActivity extends AppCompatActivity {
                                                         }
 
                                                         startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                                        finish();
                                                     }
                                                 }
                                             }
                                         });
-                            } else {
-                                // Login was not successful, handle the error or show a message
-                                //Toast.makeText(LoginActivity.this, "Login failed. Please check your credentials.", Toast.LENGTH_LONG).show();
                             }
                         }
-
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {

@@ -44,15 +44,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        BottomNavigationView navView = findViewById(R.id.nav_view);
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-
-        // Initialize Firebase Authentication
         firebaseAuth = FirebaseAuth.getInstance();
 
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
@@ -63,7 +57,6 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(binding.navView, navController);
     }
 
-
     // Method to refresh the activity
     public void refreshActivity() {
         recreate();
@@ -71,8 +64,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.burger_menu, menu); // Inflate the new menu
+        getMenuInflater().inflate(R.menu.burger_menu, menu);
         return true;
     }
 
@@ -80,12 +72,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        // Handle the items from the new menu
         if (id == R.id.logout) {
-            // Handle the action from the new menu
-            //Toast.makeText(this, "Logout clicked", Toast.LENGTH_SHORT).show();
             logout();
-            //return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -95,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         // Sign out the current user
         firebaseAuth.signOut();
 
-        // Redirect the user to the login screen (Assuming LoginActivity is the login screen)
+        // Redirect the user to the login screen
         Intent intent = new Intent(this, LoginActivity.class);
         intent.putExtra("logout", "logout");
         startActivity(intent);
